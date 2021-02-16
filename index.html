@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table Click Title Sort</title>
+
+    <link rel="stylesheet" href="./css/bootstrap-4.6.0/css/bootstrap.min.css" />
+
+    <script src="./js/jquery-1.12.4.min.js"></script>
+    <script src="./css/bootstrap-4.6.0/js/bootstrap.min.js"></script>
+
+    <style>
+        /* Font Awesome 5 Pro - solid */
+        @font-face {
+            font-family: "Font Awesome 5 Pro";
+            font-style: normal;
+            font-weight: 900;
+            font-display: auto;
+            src: url(../fonts/fa-solid-900.eot);
+            src: url(../fonts/fa-solid-900.eot?#iefix) format("embedded-opentype"), url(../fonts/fa-solid-900.woff2) format("woff2"), url(../fonts/fa-solid-900.woff) format("woff"), url(../fonts/fa-solid-900.ttf) format("truetype"), url(../fonts/fa-solid-900.svg#fontawesome) format("svg")
+        }
+
+        .table-sortable th.sort {
+            position: relative;
+            padding-right: 20px;
+        }
+
+        .table-sortable th.sort::after {
+            position: absolute;
+            right: 10px;
+            font-family: "Font Awesome 5 Pro";
+            font-weight: 900;
+            content: '\f0dc';
+            font-size: 13px;
+            cursor: pointer;
+            -webkit-transition: all 0.3s ease;
+            -moz-transition: all 0.3s ease;
+            transition: all 0.3s ease;
+        }
+
+        .table-sortable th.sort :hover::after {
+            opacity: .7;
+        }
+
+        .table-sortable th[data-sort="asc"]::after {
+            content: '\f0de';
+        }
+
+        .table-sortable th[data-sort="desc"]::after {
+            content: "\f0dd";
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>JS 排序 TABLE</h2>
+        <p>測試使用 JS 排序 TABLE</p>
+        <div class="table-responsive">
+            <table class="table table-striped table-sortable" id="OrderTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0)" data-sort="" class="sort">Firstname</th>
+                        <th onclick="sortTable(1)" data-sort="" class="sort">Lastname</th>
+                        <th onclick="sortTable(2)" data-sort="" class="sort">Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Kenny</td>
+                        <td>Wu</td>
+                        <td>kenny@example.com</td>
+                    </tr>
+                    <tr>
+                        <td>John</td>
+                        <td>Doe</td>
+                        <td>john@example.com</td>
+                    </tr>
+                    <tr>
+                        <td>Mary</td>
+                        <td>Moe</td>
+                        <td>mary@example.com</td>
+                    </tr>
+                    <tr>
+                        <td>July</td>
+                        <td>Dooley</td>
+                        <td>july@example.com</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function sortTable(column, getType) {
+            // 類型
+            var type = getType || '';
+            // 表格相關
+            var table = document.getElementById("OrderTable");
+            var thead = table.tHead;
+            var tbody = table.tBodies[0];
+            // 每一列轉陣列
+            var rows = Array.prototype.slice.call(tbody.rows, 0); // 如果沒有thead 要改 1
+            // 取得 thead th
+            var $th = $(thead).children("tr").children("th").eq(column);
+            // 取得 th data-sort 的值
+            var sortBy = $th.attr('data-sort');
+
+            // 排序
+            rows.sort(function (a, b) {
+                var tempA = $(a).children("td").eq(column).text();
+                var tempB = $(b).children("td").eq(column).text();
+
+                switch (type) {
+                    // 數字相關
+                    case 'Num':
+                        tempA = tempA.split(/[-]/).reduce(function (previous, current) {
+                            return parseInt(previous) + parseInt(current);
+                        });
+                        tempB = tempB.split(/[-]/).reduce(function (previous, current) {
+                            return parseInt(previous) + parseInt(current);
+                        });
+
+                        if (sortBy == 'desc') {
+                            return tempB - tempA;
+                        } else {
+                            return tempA - tempB;
+                        }
+
+                        break;
+                    // 日期相關
+                    case 'Date':
+                        tempA = Date.parse(tempA);
+                        tempB = Date.parse(tempB);
+
+                        if (!isNaN(tempA) && !isNaN(tempB)) {
+                            if (sortBy == 'desc') {
+                                return new Date(tempB) - new Date(tempA);
+                            } else {
+                                return new Date(tempA) - new Date(tempB);
+                            }
+                        }
+
+                        break;
+                    // 預設，文字相關
+                    default:
+                        tempA = tempA.toUpperCase();
+                        tempB = tempB.toUpperCase();
+
+                        if (sortBy == 'desc') {
+                            return tempB.localeCompare(tempA);
+                        } else {
+                            return tempA.localeCompare(tempB);
+                        }
+
+                        break;
+                }
+            });
+
+            // append each row
+            for (i = 0; i < rows.length; ++i) tbody.appendChild(rows[i]);
+
+            // 將 th 排序箭頭回到預設
+            $(thead).children("tr").children("th").attr('data-sort', 'sort')
+
+            // assign 排序箭頭
+            if (sortBy == 'desc') {
+                $th.attr('data-sort', 'asc');
+            } else {
+                $th.attr('data-sort', 'desc');
+            }
+        }
+    </script>
+</body>
+
+</html>
